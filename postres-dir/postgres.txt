@@ -1,0 +1,79 @@
+https://www.javaguides.net/2019/08/spring-boot-spring-data-jpa-postgresql-example.html
+
+======================================================================================
+--This allows a camera feed to chain behaviors
+create table ocr_behaviors
+(
+    behavior_id   serial PRIMARY KEY,
+    x_cord        integer default 0 check (x_cord >= 0),
+    y_cord        integer default 0 check (y_cord >= 0),
+    height        integer default null check (height >= 0),
+    width         integer default null check (width >= 0),
+    sanity_regex  varchar(100),
+    next_behavior numeric check (next_behavior != behavior_id)
+    --to ensure we don't get an endless loop. check nxt_b against b_id
+    --null next_behavior means that there is no next behavior. throw error.
+);
+
+create table cameras (
+    id serial PRIMARY KEY,
+    name varchar(40) not null,
+    url varchar(100) not null,
+    active boolean not null,
+    first_behavior numeric not null constraint ocr_behaviors.behavior_id
+);
+
+====================================================================================
+create user msoap login;
+
+alter user msoap with password 'supersecret';
+
+drop table if exists cameras;
+drop table if exists ocr_behaviors;
+
+--This allows a camera feed to chain behaviors
+create table ocr_behaviors
+(
+    behavior_id   serial PRIMARY KEY,
+    x_cord        integer default 0 check (x_cord >= 0),
+    y_cord        integer default 0 check (y_cord >= 0),
+    height        integer default null check (height >= 0),
+    width         integer default null check (width >= 0),
+    sanity_regex  varchar(100),
+    sample_rate   integer check (sample_rate > 0),
+
+    next_behavior numeric check (next_behavior != behavior_id)
+    --to ensure we don't get an endless loop. check nxt_b against b_id
+    --null next_behavior means that there is no next behavior. throw error.
+);
+
+create table cameras (
+                         id serial PRIMARY KEY,
+                         name varchar(40) not null,
+                         url varchar(100) not null,
+                         active boolean not null,
+                         first_behavior integer,
+                        constraint fk_behavior_id
+                            FOREIGN key (first_behavior)
+                            references ocr_behaviors(behavior_id)
+);
+=========================================================================================
+logging.level.org.springframework=ERROR
+
+#spring.jpa.hibernate.ddl-auto=none
+#
+#spring.datasource.url=jdbc:postgresql://localhost:5432/postgres
+#spring.datasource.username=postgres
+#spring.datasource.password=2mch2d0
+#
+#spring.jpa.properties.hibernate.jdbc.lob.non_contextual_creation=true
+
+spring.cloud.gcp.sql.enabled=false
+spring.datasource.url=jdbc:postgresql://localhost:5432/postgres
+spring.datasource.username=postgres
+spring.datasource.password=2mch2d0
+spring.jpa.properties.hibernate.default_schema=public
+
+spring.datasource.hikari.connectionTimeout=20000
+spring.datasource.hikari.maximumPoolSize=5
+=============================================================================================
