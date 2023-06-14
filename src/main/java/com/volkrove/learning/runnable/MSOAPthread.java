@@ -5,7 +5,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.concurrent.Callable;
 
-
+//this is all well and good. component picks up into context. presumably.
+// but since nothing ever calls this from the mainthread. async anotation/task never happens
 @Component
 public class MSOAPthread {
 
